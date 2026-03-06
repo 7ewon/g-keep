@@ -12,8 +12,7 @@ export default function SelectTypeScreen() {
   if (!selected) return;
 
   if (selected === 'found') {
-    {/* 촬영권한얻고 촬영 페이지로 이동 */}
-    router.push('/tag'); 
+    router.push('/location'); 
     } else {
     router.push('/select-type'); 
     }

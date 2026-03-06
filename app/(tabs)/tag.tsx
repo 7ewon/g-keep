@@ -1,10 +1,11 @@
+import ButtonBack from '@/components/ButtonBack';
 import PrimaryButton from '@/components/ButtonPrimary';
 import Tag from '@/components/Tag';
 import React, { useState } from 'react';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const AVAILABLE_TAGS = ['지갑', '휴대폰', '카드', '에어팟', '열쇠', '안경', '가방', '책', '기타'];
+const AVAILABLE_TAGS = ['휴대폰', '우산', '카드', '책', '가방', '지갑', '시계', '옷', '기타'];
 
 export default function TagSelectionScreen() {
   const [selectedTag, setSelectedTag] = useState<string>('지갑');
@@ -22,7 +23,9 @@ export default function TagSelectionScreen() {
        <View className="w-full h-1 bg-gray-200 mt-20 overflow-hidden">
               <View className="w-2/3 h-1 bg-black" />
           </View>
+          <ButtonBack/> 
       <View className="flex-1 justify-center">
+        
         <Text className="text-[24px] font-pretendard-bold px-4">
           분실물의 태그를{"\n"}등록해주세요.
         </Text>
@@ -33,17 +36,6 @@ export default function TagSelectionScreen() {
             className="w-full h-full"
             resizeMode="cover"
           />
-          <View className="absolute inset-0 items-center justify-end pb-6">
-            <Pressable 
-              onPress={() => {}}
-              className="bg-white/90 px-12 py-4 rounded-full active:opacity-70"
-              style={[
-            { boxShadow: '2px 2px 15px rgba(22, 26, 62, 0.05)' },
-          ]}
-            >
-              <Text className="text-black font-pretendard text-[20px]">다시 찍기</Text>
-            </Pressable>
-          </View>
         </View>
 
         <View className="flex-row flex-wrap justify-center gap-x-2 gap-y-2">
