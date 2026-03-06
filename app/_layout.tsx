@@ -1,31 +1,25 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import 'react-native-reanimated';
+import './global.css';
 
-import { useColorScheme } from '@/components/useColorScheme';
-
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
+export { ErrorBoundary } from 'expo-router';
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
   initialRouteName: '(tabs)',
 };
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    "SpaceMono": require('../assets/fonts/SpaceMono-Regular.ttf'),
+    "Pretendard-Bold": require('../assets/fonts/Pretendard-Bold.ttf'),
+    "Pretendard-Medium": require('../assets/fonts/Pretendard-Medium.ttf'),
   });
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;
   }, [error]);
@@ -40,17 +34,26 @@ export default function RootLayout() {
     return null;
   }
 
-  return <RootLayoutNav />;
-}
-
-function RootLayoutNav() {
-  const colorScheme = useColorScheme();
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+    <ThemeProvider value={DefaultTheme}>
+      <Stack
+        screenOptions={{
+          headerShown: false, // 기본 헤더를 끄면 화면 전환 시 헤더 꿀렁임이 사라져요.
+          animation: 'slide_from_right', // iOS 느낌의 부드러운 슬라이드
+          animationDuration: 350, // 살짝 더 여유 있게(기본은 보통 250~300)
+          contentStyle: { backgroundColor: 'white' }, // 배경색 통일로 깜빡임 방지
+        }}
+      >
+        <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} /> 
+        {/* 메인 탭으로 진입할 때는 페이드 효과가 자연스러워요 */}
+        
+        <Stack.Screen 
+          name="modal" 
+          options={{ 
+            presentation: 'modal',
+            animation: 'slide_from_bottom' // 모달은 아래서 위로!
+          }} 
+        />
       </Stack>
     </ThemeProvider>
   );

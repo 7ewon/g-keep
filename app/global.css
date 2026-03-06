@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  .font-pretendard-bold {
+    font-family: "Pretendard-Bold"; 
+  }
+  .font-pretendard {
+    font-family: "Pretendard-Medium";
+  }
+}
