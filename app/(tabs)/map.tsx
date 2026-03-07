@@ -8,8 +8,8 @@ import MapView, { Callout, Marker } from 'react-native-maps';
 const CENTER = {
   latitude: 35.2285,
   longitude: 126.843,
-  latitudeDelta: 0.05,
-  longitudeDelta: 0.05,
+  latitudeDelta: 0.0075,
+  longitudeDelta: 0.0075,
 };
 
 type Coordinate = {

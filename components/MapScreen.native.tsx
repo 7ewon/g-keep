@@ -9,8 +9,8 @@ import CardNoIcon from './CardNoIcon';
 const CENTER = {
   latitude: 35.2285,
   longitude: 126.843,
-  latitudeDelta: 0.01,
-  longitudeDelta: 0.01,
+  latitudeDelta: 1,
+  longitudeDelta: 1,
 };
 
 type Coordinate = {
