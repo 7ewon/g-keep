@@ -1,27 +1,67 @@
 import ButtonBack from '@/components/ButtonBack';
 import PrimaryButton from '@/components/ButtonPrimary';
 import Tag from '@/components/Tag';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { Image, Modal, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { uploadLostItem } from '@/services/lostItemService';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useMemo, useState } from 'react';
+import { Alert, Image, Modal, Text, View } from 'react-native';
 
 const AVAILABLE_TAGS = ['휴대폰', '우산', '카드', '책', '가방', '지갑', '시계', '옷', '기타'];
+
+const getSingleParam = (value: string | string[] | undefined) => {
+  if (Array.isArray(value)) return value[0];
+  return value;
+};
 
 export default function TagSelectionScreen() {
   const [selectedTag, setSelectedTag] = useState<string>('지갑');
   const [modalVisible, setModalVisible] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams<{
+    uri?: string | string[];
+    lat?: string | string[];
+    lng?: string | string[];
+  }>();
 
-  const handleNext = () => {
-    setModalVisible(true);
+  const imageUri = getSingleParam(params.uri);
+  const latitude = Number(getSingleParam(params.lat));
+  const longitude = Number(getSingleParam(params.lng));
 
-    setTimeout(() => {
-      setModalVisible(false);
-      router.replace('/');
-    }, 2000);
+  const hasLocation = useMemo(
+    () => Number.isFinite(latitude) && Number.isFinite(longitude),
+    [latitude, longitude],
+  );
+
+  const handleNext = async () => {
+    if (!imageUri || !hasLocation) {
+      Alert.alert('업로드 정보가 없습니다', '지도에서 위치를 선택하고 사진을 다시 등록해주세요.');
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      await uploadLostItem({
+        imageUri,
+        latitude,
+        longitude,
+        tag: selectedTag,
+      });
+
+      setModalVisible(true);
+      setTimeout(() => {
+        setModalVisible(false);
+        router.replace('/');
+      }, 1800);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : '잠시 후 다시 시도해주세요.';
+      Alert.alert('등록 실패', errorMessage);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -41,11 +81,20 @@ export default function TagSelectionScreen() {
 
         <View className="relative w-full aspect-[8/7] rounded-3xl overflow-hidden my-8 bg-gray-200">
           <Image
-            source={{ uri: 'https://images.unsplash.com/photo-1574051033756-3a541013115a' }}
+            source={{
+              uri:
+                imageUri || 'https://images.unsplash.com/photo-1574051033756-3a541013115a',
+            }}
             className="w-full h-full"
             resizeMode="cover"
           />
         </View>
+
+        <Text className="text-center text-gray-500 text-[14px] mb-4">
+          {hasLocation
+            ? `위도 ${latitude.toFixed(5)} / 경도 ${longitude.toFixed(5)}`
+            : '위치 정보가 없습니다. 지도에서 다시 선택해주세요.'}
+        </Text>
 
         <View className="flex-row flex-wrap justify-center gap-x-2 gap-y-2">
           {AVAILABLE_TAGS.map((tag) => (
@@ -60,8 +109,10 @@ export default function TagSelectionScreen() {
 
         <View className="mt-10 mb-6">
           <PrimaryButton
-            title="등록하기"
+            title={isUploading ? '업로드 중...' : '등록하기'}
             onPress={handleNext}
+            loading={isUploading}
+            disabled={!imageUri || !hasLocation}
           />
         </View>
 
@@ -90,7 +141,7 @@ export default function TagSelectionScreen() {
             </Text>
 
             <Text style={{ marginTop: 10 }}>
-              태그 등록이 완료되었습니다!
+              태그와 위치 등록이 완료되었습니다!
             </Text>
           </View>
         </View>

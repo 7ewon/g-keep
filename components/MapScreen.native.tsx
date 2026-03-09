@@ -9,8 +9,8 @@ import CardNoIcon from './CardNoIcon';
 const CENTER = {
   latitude: 35.2285,
   longitude: 126.843,
-  latitudeDelta: 1,
-  longitudeDelta: 1,
+  latitudeDelta: 0.01,
+  longitudeDelta: 0.01,
 };
 
 type Coordinate = {
@@ -46,7 +46,7 @@ export default function MapScreenNative() {
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 1,
+        quality: 0.45,
       });
 
       if (result.canceled || !result.assets?.length) return;

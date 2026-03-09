@@ -1,5 +1,74 @@
 # g-keep
 
+# Firebase 연결
+
+이 프로젝트는 `Firebase Storage`에 사진을 올리고, `Firestore`에
+좌표/태그/사진 URL을 저장하도록 연결할 수 있습니다.
+
+## 1) Firebase 콘솔 준비
+
+- Firestore Database 생성 (Native 모드)
+- Storage 생성
+- 웹 앱 등록 후 SDK 설정 값 확인
+
+## 2) 환경변수 설정
+
+`.env.example`을 참고해 프로젝트 루트에 `.env` 파일을 만들고 값을 채웁니다.
+
+```bash
+cp .env.example .env
+```
+
+필수 키:
+
+- `EXPO_PUBLIC_FIREBASE_API_KEY`
+- `EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN`
+- `EXPO_PUBLIC_FIREBASE_PROJECT_ID`
+- `EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET`
+- `EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+- `EXPO_PUBLIC_FIREBASE_APP_ID`
+
+주의:
+
+- 이 프로젝트는 `firebase` 웹 SDK를 사용하므로 `EXPO_PUBLIC_FIREBASE_APP_ID`에는
+  `...:web:...` 형태의 웹 앱 App ID를 넣어야 합니다.
+- iOS 앱(`...:ios:...`) App ID를 넣으면 업로드가 실패합니다.
+
+## 3) 앱에서 업로드되는 데이터
+
+`등록하기`를 누르면 아래 순서로 저장됩니다.
+
+1. 선택한 이미지 파일을 `Storage/lost-items/*` 경로에 업로드
+2. 다운로드 URL을 받아 Firestore `lostItems` 컬렉션에 문서 생성
+3. 저장 필드: `imageUrl`, `imagePath`, `location(GeoPoint)`,
+   `latitude`, `longitude`, `tag`, `createdAt`
+
+## 4) 보안 규칙(개발용 예시)
+
+초기 테스트용으로만 사용하세요. 운영 전에는 인증 기반 규칙으로 변경해야 합니다.
+
+```txt
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /lostItems/{docId} {
+      allow read, write: if true;
+    }
+  }
+}
+```
+
+```txt
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /lost-items/{allPaths=**} {
+      allow read, write: if true;
+    }
+  }
+}
+```
+
 # 커밋룰
 
 -제목과 본문을 빈 행으로 구분한다.
