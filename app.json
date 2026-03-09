@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "config": {
-        "googleMapsApiKey": "Hello World"
+        "googleMapsApiKey": "AIzaSyC7bpav30Ms4hvgqeEJeSF_jKA_VArhFeo"
       },
       "bundleIdentifier": "com.yewonkim.g-keep"
     },
