@@ -1,9 +1,9 @@
 import ButtonBack from '@/components/ButtonBack';
 import CardNoIcon from '@/components/CardNoIcon';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
-import MapView, { Callout, Marker } from 'react-native-maps';
+import { useMemo, useState } from 'react';
+import { Image, Modal, StyleSheet, Text, View } from 'react-native';
+import MapView, { Callout, CalloutSubview, Marker } from 'react-native-maps';
 
 const CENTER = {
   latitude: 35.2285,
@@ -48,11 +48,21 @@ const DATA: PhotoMarker[] = [
 export default function TagMapScreen() {
   const { tag } = useLocalSearchParams<{ tag: string }>();
   const router = useRouter();
+  const [modalVisible, setModalVisible] = useState(false);
 
   const filteredMarkers = useMemo(() => {
     if (!tag) return DATA;
     return DATA.filter((item) => item.tag === tag);
   }, [tag]);
+
+  const handleClaim = () => {
+    setModalVisible(true);
+
+    setTimeout(() => {
+      setModalVisible(false);
+      router.replace('/');
+    }, 2000);
+  };
 
   return (
     <View style={styles.container}>
@@ -69,10 +79,27 @@ export default function TagMapScreen() {
 
             <Callout tooltip>
               <View style={styles.calloutCard}>
+
+                <CalloutSubview onPress={handleClaim}>
+                  <View className='w-full 
+                    py-2
+                    mx-2
+                    mt-2
+                    rounded-full 
+                    items-center 
+                    justify-center 
+                    bg-black'>
+                    <Text className='font-pretendard-bold text-[14px] text-white'>
+                      제 물건이에요!
+                    </Text>
+                  </View>
+                </CalloutSubview>
+
                 <Image
                   source={{ uri: marker.imageUri }}
                   style={styles.calloutImage}
                 />
+
               </View>
             </Callout>
 
@@ -82,7 +109,7 @@ export default function TagMapScreen() {
 
       <ButtonBack />
 
-      <View className="absolute bottom-16 right-8 left-8">
+      <View style={{ position: 'absolute', bottom: 64, right: 32, left: 32 }}>
         <CardNoIcon
           title={tag || '모든 태그'}
           description={
@@ -92,6 +119,17 @@ export default function TagMapScreen() {
           }
         />
       </View>
+
+      {/* 🎉 축하 모달 */}
+      <Modal transparent visible={modalVisible} animationType="fade">
+        <View style={styles.modalBackground}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>🎉 축하합니다!</Text>
+            <Text style={styles.modalText}>물건을 찾았어요!</Text>
+          </View>
+        </View>
+      </Modal>
+
     </View>
   );
 }
@@ -123,8 +161,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 16,
     padding: 6,
+  },
 
-    boxShadow: '2px 2px 20px rgba(22, 26, 62, 0.1)'
+  
+
+  claimText: {
+    fontSize: 14,
+    color: 'white',
+    fontWeight: '700',
   },
 
   calloutImage: {
@@ -133,9 +177,27 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
 
+  modalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 
-  backText: {
-    fontSize: 20,
-    fontWeight: '600',
+  modalCard: {
+    backgroundColor: 'white',
+    padding: 30,
+    borderRadius: 20,
+    alignItems: 'center',
+  },
+
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+  },
+
+  modalText: {
+    marginTop: 10,
+    fontSize: 16,
   },
 });
