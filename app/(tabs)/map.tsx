@@ -1,10 +1,11 @@
 import ButtonBack from '@/components/ButtonBack';
 import CardNoIcon from '@/components/CardNoIcon';
 import { db } from '@/lib/firebase';
+import { deleteLostItem } from '@/services/lostItemService';
 import { collection, onSnapshot } from 'firebase/firestore';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Image, Modal, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Modal, StyleSheet, Text, View } from 'react-native';
 import MapView, { Callout, CalloutSubview, Marker } from 'react-native-maps';
 
 const CENTER = {
@@ -23,6 +24,7 @@ type PhotoMarker = {
   id: string;
   coordinate: Coordinate;
   imageUri: string;
+  imagePath?: string;
   tag: string;
 };
 
@@ -57,21 +59,23 @@ const extractCoordinate = (data: any): Coordinate | null => {
 export default function TagMapScreen() {
   const params = useLocalSearchParams<{ tag?: string | string[] }>();
   const tag = getSingleParam(params.tag);
-  const router = useRouter();
   const [markers, setMarkers] = useState<PhotoMarker[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!db) return;
 
     const unsubscribe = onSnapshot(collection(db, 'lostItems'), (snapshot) => {
-      const nextMarkers: PhotoMarker[] = snapshot.docs
-        .map((doc) => {
+      const nextMarkers = snapshot.docs.reduce<PhotoMarker[]>((acc, doc) => {
           const data = doc.data();
           const coordinate = extractCoordinate(data);
-          if (!coordinate) return null;
+          if (!coordinate) return acc;
 
-          return {
+          const imagePath =
+            typeof data.imagePath === 'string' ? data.imagePath : undefined;
+
+          const marker: PhotoMarker = {
             id: doc.id,
             coordinate,
             imageUri:
@@ -80,8 +84,14 @@ export default function TagMapScreen() {
               FALLBACK_IMAGE,
             tag: typeof data.tag === 'string' ? data.tag : '기타',
           };
-        })
-        .filter((item): item is PhotoMarker => item !== null);
+
+          if (imagePath) {
+            marker.imagePath = imagePath;
+          }
+
+          acc.push(marker);
+          return acc;
+        }, []);
 
       setMarkers(nextMarkers);
     });
@@ -94,13 +104,47 @@ export default function TagMapScreen() {
     return markers.filter((item) => item.tag === tag);
   }, [markers, tag]);
 
-  const handleClaim = () => {
-    setModalVisible(true);
+  const removeClaimedItem = async (marker: PhotoMarker) => {
+    if (deletingId) return;
 
-    setTimeout(() => {
-      setModalVisible(false);
-      router.replace('/');
-    }, 2000);
+    setDeletingId(marker.id);
+
+    try {
+      await deleteLostItem({
+        id: marker.id,
+        imagePath: marker.imagePath,
+      });
+
+      setModalVisible(true);
+      setTimeout(() => {
+        setModalVisible(false);
+      }, 1400);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : '잠시 후 다시 시도해주세요.';
+      Alert.alert('삭제 실패', message);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleClaim = (marker: PhotoMarker) => {
+    if (deletingId) return;
+
+    Alert.alert(
+      '내 물건으로 처리할까요?',
+      '선택하면 Firebase에서 삭제되고 지도에서도 사라집니다.',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '삭제',
+          style: 'destructive',
+          onPress: () => {
+            void removeClaimedItem(marker);
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -127,17 +171,15 @@ export default function TagMapScreen() {
                   <Text style={styles.calloutTagChipText}>#{marker.tag}</Text>
                 </View>
 
-                <CalloutSubview onPress={handleClaim}>
-                  <View className='w-full 
-                    py-2
-                    mx-2
-                    mt-2
-                    rounded-full 
-                    items-center 
-                    justify-center 
-                    bg-black'>
-                    <Text className='font-pretendard-bold text-[14px] text-white'>
-                      제 물건이에요!
+                <CalloutSubview onPress={() => handleClaim(marker)}>
+                  <View
+                    style={[
+                      styles.claimButton,
+                      deletingId === marker.id && styles.claimButtonDisabled,
+                    ]}
+                  >
+                    <Text style={styles.claimText}>
+                      {deletingId === marker.id ? '삭제 중...' : '제 물건이에요!'}
                     </Text>
                   </View>
                 </CalloutSubview>
@@ -174,8 +216,8 @@ export default function TagMapScreen() {
       <Modal transparent visible={modalVisible} animationType="fade">
         <View style={styles.modalBackground}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>🎉 축하합니다!</Text>
-            <Text style={styles.modalText}>물건을 찾았어요!</Text>
+            <Text style={styles.modalTitle}>삭제 완료</Text>
+            <Text style={styles.modalText}>지도에서 해당 물건을 제거했어요.</Text>
           </View>
         </View>
       </Modal>
@@ -251,6 +293,19 @@ const styles = StyleSheet.create({
   },
 
   
+  claimButton: {
+    width: '100%',
+    paddingVertical: 8,
+    marginTop: 8,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'black',
+  },
+
+  claimButtonDisabled: {
+    opacity: 0.7,
+  },
 
   claimText: {
     fontSize: 14,

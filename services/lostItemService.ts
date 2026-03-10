@@ -6,14 +6,35 @@ import {
   storage,
 } from '@/lib/firebase';
 import * as FileSystem from 'expo-file-system/legacy';
-import { GeoPoint, addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { getDownloadURL, ref } from 'firebase/storage';
+import {
+  GeoPoint,
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  serverTimestamp,
+} from 'firebase/firestore';
+import { deleteObject, getDownloadURL, ref } from 'firebase/storage';
 
 type UploadLostItemInput = {
   imageUri: string;
   latitude: number;
   longitude: number;
   tag: string;
+};
+
+type DeleteLostItemInput = {
+  id: string;
+  imagePath?: string | null;
+};
+
+const getFirebaseConfigErrorMessage = () => {
+  const configMessage = [
+    ...missingFirebaseEnvKeys.map((key) => `${key} 누락`),
+    ...firebaseConfigWarnings,
+  ].join(', ');
+
+  return configMessage || '환경변수를 확인해주세요.';
 };
 
 const getImageExtension = (imageUri: string) => {
@@ -145,14 +166,7 @@ export const uploadLostItem = async ({
   tag,
 }: UploadLostItemInput) => {
   if (!isFirebaseConfigured || !db || !storage) {
-    const configMessage = [
-      ...missingFirebaseEnvKeys.map((key) => `${key} 누락`),
-      ...firebaseConfigWarnings,
-    ].join(', ');
-
-    throw new Error(
-      `Firebase 설정 오류: ${configMessage || '환경변수를 확인해주세요.'}`,
-    );
+    throw new Error(`Firebase 설정 오류: ${getFirebaseConfigErrorMessage()}`);
   }
 
   const extension = getImageExtension(imageUri);
@@ -191,4 +205,37 @@ export const uploadLostItem = async ({
     id: docRef.id,
     imageUrl,
   };
+};
+
+export const deleteLostItem = async ({ id, imagePath }: DeleteLostItemInput) => {
+  if (!isFirebaseConfigured || !db) {
+    throw new Error(`Firebase 설정 오류: ${getFirebaseConfigErrorMessage()}`);
+  }
+
+  await withTimeout(
+    deleteDoc(doc(db, 'lostItems', id)),
+    10000,
+    '분실물 삭제 시간이 초과되었습니다. 다시 시도해주세요.',
+  );
+
+  if (!imagePath || !storage) return;
+
+  try {
+    await withTimeout(
+      deleteObject(ref(storage, imagePath)),
+      10000,
+      '이미지 삭제 시간이 초과되었습니다. 다시 시도해주세요.',
+    );
+  } catch (error) {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      error.code === 'storage/object-not-found'
+    ) {
+      return;
+    }
+
+    console.warn('Storage 이미지 삭제 실패:', error);
+  }
 };
