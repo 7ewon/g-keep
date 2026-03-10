@@ -2,8 +2,8 @@ import ButtonBack from '@/components/ButtonBack';
 import CardNoIcon from '@/components/CardNoIcon';
 import { db } from '@/lib/firebase';
 import { deleteLostItem } from '@/services/lostItemService';
-import { collection, onSnapshot } from 'firebase/firestore';
 import { useLocalSearchParams } from 'expo-router';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Image, Modal, StyleSheet, Text, View } from 'react-native';
 import MapView, { Callout, CalloutSubview, Marker } from 'react-native-maps';
@@ -167,7 +167,7 @@ export default function TagMapScreen() {
 
             <Callout tooltip>
               <View style={styles.calloutCard}>
-                <View style={styles.calloutTagChip}>
+                <View>
                   <Text style={styles.calloutTagChipText}>#{marker.tag}</Text>
                 </View>
 
@@ -188,8 +188,6 @@ export default function TagMapScreen() {
                   source={{ uri: marker.imageUri }}
                   style={styles.calloutImage}
                 />
-                <Text style={styles.calloutTagMeta}>태그: {marker.tag}</Text>
-
               </View>
             </Callout>
 
@@ -277,19 +275,11 @@ const styles = StyleSheet.create({
     width: 184,
   },
 
-  calloutTagChip: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#111827',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-    marginBottom: 6,
-  },
 
   calloutTagChipText: {
     color: 'white',
+    fontFamily: 'Pretendard-Bold',
     fontSize: 12,
-    fontWeight: '700',
   },
 
   
@@ -319,12 +309,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
 
-  calloutTagMeta: {
-    marginTop: 8,
-    fontSize: 13,
-    color: '#374151',
-    fontWeight: '600',
-  },
 
   modalBackground: {
     flex: 1,
@@ -341,12 +325,13 @@ const styles = StyleSheet.create({
   },
 
   modalTitle: {
-    fontSize: 22,
-    fontWeight: '700',
+    fontSize: 18,
+    fontFamily: 'Pretendard-Bold',
   },
 
   modalText: {
     marginTop: 10,
+    fontFamily: 'Pretendard-regular',
     fontSize: 16,
   },
 });

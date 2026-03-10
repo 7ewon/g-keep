@@ -90,12 +90,6 @@ export default function TagSelectionScreen() {
           />
         </View>
 
-        <Text className="text-center text-gray-500 text-[14px] mb-4">
-          {hasLocation
-            ? `위도 ${latitude.toFixed(5)} / 경도 ${longitude.toFixed(5)}`
-            : '위치 정보가 없습니다. 지도에서 다시 선택해주세요.'}
-        </Text>
-
         <View className="flex-row flex-wrap justify-center gap-x-2 gap-y-2">
           {AVAILABLE_TAGS.map((tag) => (
             <Tag
@@ -136,11 +130,11 @@ export default function TagSelectionScreen() {
               alignItems: 'center',
             }}
           >
-            <Text style={{ fontSize: 22, fontWeight: '700' }}>
+            <Text style={{ fontSize: 20, fontFamily: 'Pretendard-Bold' }}>
               🎉 축하합니다!
             </Text>
 
-            <Text style={{ marginTop: 10 }}>
+            <Text style={{ fontSize: 16, marginTop: 10, fontFamily: 'Pretendard-regular' }}>
               태그와 위치 등록이 완료되었습니다!
             </Text>
           </View>
