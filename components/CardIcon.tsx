@@ -4,14 +4,12 @@ import { Animated, Text, View } from 'react-native';
 type CardIconProps = {
   title: string;
   description: string;
-  icon: React.ReactNode;
   selected?: boolean;
 };
 
 export default function CardIcon({
   title,
   description,
-  icon,
   selected = false,
 }: CardIconProps) {
   // 1. 애니메이션 값 초기화
@@ -61,9 +59,6 @@ export default function CardIcon({
         </Text>
       </View>
       
-      <View className="ml-12">
-        {icon}
-      </View>
     </Animated.View>
   );
 }

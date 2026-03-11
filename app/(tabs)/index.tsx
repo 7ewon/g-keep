@@ -1,6 +1,5 @@
 import CardIcon from '@/components/CardIcon';
 import { useRouter } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
@@ -34,13 +33,7 @@ export default function SelectTypeScreen() {
             title="물건을 잃어버렸어요"
             description="지도에서 분실한 물건을 찾고 싶어요."
             selected={selected === 'lost'}
-            icon={
-              <SymbolView
-                name={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
-                size={28}
-                tintColor="black"
-              />
-            }
+           
           />
         </Pressable>
 
@@ -49,13 +42,7 @@ export default function SelectTypeScreen() {
             title="물건을 주웠어요"
             description="습득한 물건을 등록하고 싶어요."
             selected={selected === 'found'}
-            icon={
-              <SymbolView
-                name={{ ios: 'hand.raised', android: 'pan_tool', web: 'pan_tool' }}
-                size={28}
-                tintColor="black"
-              />
-            }
+            
           />
         </Pressable>
 
