@@ -92,7 +92,6 @@ export default function LostItemPage() {
             onPress={() =>
               router.push({
                 pathname: "/map",
-                params: { tag: "all" },
               })
             }
           />
