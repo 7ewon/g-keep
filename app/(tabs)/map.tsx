@@ -132,8 +132,8 @@ export default function TagMapScreen() {
     if (deletingId) return;
 
     Alert.alert(
-      '내 물건으로 처리할까요?',
-      '선택하면 Firebase에서 삭제되고 지도에서도 사라집니다.',
+      '자신의 물건이 맞나요?',
+      '선택하면 지도에서 해당 물건이 사라집니다.',
       [
         { text: '취소', style: 'cancel' },
         {
